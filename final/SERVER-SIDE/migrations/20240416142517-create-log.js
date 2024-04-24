@@ -10,13 +10,13 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       
-      uid: {
+      user_id: {
         type: Sequelize.INTEGER
       },
-      pid: {
+      project_id: {
         type: Sequelize.INTEGER
       },
-      tid: {
+      task_id: {
         type: Sequelize.INTEGER
       },
       logdata: {

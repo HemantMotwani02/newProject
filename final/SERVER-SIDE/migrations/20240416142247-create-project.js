@@ -3,20 +3,20 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('projects', {
-      pid: {
+      project_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
       
-      pname: {
+      project_name: {
         type: Sequelize.STRING
       },
-      pdesc: {
+      project_details: {
         type: Sequelize.TEXT
       },
-      mid: {
+      manager_id: {
         type: Sequelize.INTEGER
       },
       created_by: {

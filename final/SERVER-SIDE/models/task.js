@@ -14,15 +14,15 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   task.init({
-    tid: {
+    task_id: {
       primaryKey:true,
       autoIncrement:true,
       type :DataTypes.INTEGER
     },
-    pid: DataTypes.INTEGER,
+    project_id: DataTypes.INTEGER,
     created_by: DataTypes.INTEGER,
-    tname: DataTypes.STRING,
-    tdesc: DataTypes.TEXT,
+    task_name: DataTypes.STRING,
+    task_details: DataTypes.TEXT,
     status: DataTypes.STRING
   }, {
     sequelize,

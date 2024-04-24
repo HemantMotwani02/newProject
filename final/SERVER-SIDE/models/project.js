@@ -14,14 +14,14 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   project.init({
-    pid: {
+    peoject_id: {
       primaryKey:true,
       autoIncrement:true,
       type :DataTypes.INTEGER
     },
-    pname: DataTypes.STRING,
-    pdesc: DataTypes.TEXT,
-    mid: DataTypes.INTEGER,
+    project_name: DataTypes.STRING,
+    project_details: DataTypes.TEXT,
+    manager_id: DataTypes.INTEGER,
     created_by: DataTypes.INTEGER,
     status: DataTypes.STRING
   }, {

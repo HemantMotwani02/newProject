@@ -47,26 +47,26 @@ db.log =  require('../models/log')(sequelize,DataTypes)
 
 // user - logs
 db.userinfo.hasMany(db.log,{
-  foreignKey : 'uid'
+  foreignKey : 'user_id'
 })
 db.log.belongsTo(db.userinfo,{
-  foreignKey : 'uid'
+  foreignKey : 'user_id'
 })
 
 // user - projects
 db.userinfo.hasMany(db.project,{
-  foreignKey : 'mid'
+  foreignKey : 'manager_id'
 })
 db.project.belongsTo(db.userinfo,{
-  foreignKey:'mid'
+  foreignKey:'manager_id'
 })
 
 // user - assign
 db.userinfo.hasMany(db.assignment,{
-  foreignKey:'uid'
+  foreignKey:'user_id'
 })
 db.assignment.belongsTo(db.userinfo,{
-  foreignKey : 'uid'
+  foreignKey : 'user_id'
 })
 
 // user - tasks
@@ -79,36 +79,36 @@ db.task.belongsTo(db.userinfo,{
 
 // project - logs
 db.project.hasMany(db.log,{
-  foreignKey:'pid'
+  foreignKey:'project_id'
 })
 db.log.belongsTo(db.project,{
-  foreignKey:'pid'
+  foreignKey:'project_id'
 })
 
 // project - assign
 db.project.hasMany(db.assignment,{
-  foreignKey:'pid'
+  foreignKey:'project_id'
 })
 
 db.assignment.belongsTo(db.project,{
-  foreignKey:'pid'
+  foreignKey:'project_id'
 })
 
 // project - task
 db.project.hasMany(db.task,{
-  foreignKey : 'pid'
+  foreignKey : 'project_id'
 })
 
 db.task.belongsTo(db.project,{
-  foreignKey:'pid'
+  foreignKey:'project_id'
 })
 
 // task - logs
 db.task.hasMany(db.log,{
-  foreignKey:'tid'
+  foreignKey:'task_id'
 })
 db.log.belongsTo(db.task,{
-  foreignKey : 'tid'
+  foreignKey : 'task_id'
 })
 
 module.exports = db;

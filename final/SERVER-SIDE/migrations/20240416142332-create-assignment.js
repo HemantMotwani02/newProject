@@ -3,20 +3,20 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('assignments', {
-      aid: {
+      assignment_id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
       
-      pid: {
+      project_id: {
         type: Sequelize.INTEGER
       },
-      uid: {
+      user_id: {
         type: Sequelize.INTEGER
       },
-      mid: {
+      manager_id: {
         type: Sequelize.INTEGER
       },
       createdAt: {

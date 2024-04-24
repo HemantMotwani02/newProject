@@ -7,7 +7,7 @@ const authIslogin = async(req,res,next) => {
     const token = req.get('Authorization').split(' ')[1]
     let response = await jwt.verify(token,'mynameisvedantrathore');
     if( response != null ){
-       let result = await userinfo.findOne({where:{uemail:response.uemail}})
+       let result = await userinfo.findOne({where:{email:response.email}})
        res.locals.user = result.toJSON()
     }else{
       res.json({

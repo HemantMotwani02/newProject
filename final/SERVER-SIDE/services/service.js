@@ -17,18 +17,18 @@ const getProjectDetails = async()=>{
             }]
         }],
         where : {
-            mid : 1 
+            manager_id : 1 
         }
     })
     function groupInfoByProject(data) {
         return data.reduce((acc, obj) => {
-            const { pid, pname, pdesc, mid, created_by, status,createdAt,updatedAt, assignments, ...user } = obj; // Extract project info, user info, assignments
-            if (!acc[pid]) {
-                acc[pid] = { project: { pid, pname, pdesc, mid, created_by, status,createdAt,updatedAt }, names: [], tasks: [], allusers: [] };
+            const { project_id, project_name, project_details, manager_id, created_by, status,createdAt,updatedAt, assignments, ...user } = obj; // Extract project info, user info, assignments
+            if (!acc[project_id]) {
+                acc[project_id] = { project: { project_id, project_name, project_details, manager_id, created_by, status,createdAt,updatedAt }, names: [], tasks: [], allusers: [] };
             }
             assignments.forEach(assignment => {
                 const { userinfo } = assignment;
-                acc[pid].names.push({ uid: userinfo.uid, uname: userinfo.uname });
+                acc[project_id].names.push({ user_id: userinfo.user_id, user_name: userinfo.user_name });
             });
             return acc;
         }, {});
@@ -46,17 +46,17 @@ const getProjectDetails = async()=>{
             }]
         }],
         where : {
-            mid : 1 
+            manager_id : 1 
         }
     })
 
    function taskMerging(infoByProject,taskData ){
              taskData.forEach( data => {
-                if( infoByProject[data.pid]){
+                if( infoByProject[data.project_id]){
                     data.tasks.forEach( eachTask =>{
-                        const { tid , pid ,created_by, tname,tdesc,status,createdAt,updatedAt, userinfo} = eachTask
-                        infoByProject[data.pid].tasks.push({
-                            tid,pid,created_by, tname,tdesc,status,createdAt,updatedAt,uname:userinfo.uname
+                        const { task_id , project_id ,created_by, task_name,task_details,status,createdAt,updatedAt, userinfo} = eachTask
+                        infoByProject[data.project_id].tasks.push({
+                            task_id,project_id,created_by, task_name,task_details,status,createdAt,updatedAt,user_name:userinfo.user_name
                         })
                     })
                 }

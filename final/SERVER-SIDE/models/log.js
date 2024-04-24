@@ -19,9 +19,9 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement:true,
       type :DataTypes.INTEGER
     },
-    uid: DataTypes.INTEGER,
-    pid: DataTypes.INTEGER,
-    tid: DataTypes.INTEGER,
+    user_id: DataTypes.INTEGER,
+    project_id: DataTypes.INTEGER,
+    task_id: DataTypes.INTEGER,
     logdata: DataTypes.TEXT,
     logstatus: DataTypes.STRING,
     logmid: DataTypes.INTEGER

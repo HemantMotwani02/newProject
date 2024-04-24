@@ -14,14 +14,14 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   assignment.init({
-    aid: {
+    assign_id: {
       primaryKey:true,
       autoIncrement:true,
       type :DataTypes.INTEGER
     },
-    pid: DataTypes.INTEGER,
-    uid: DataTypes.INTEGER,
-    mid: DataTypes.INTEGER
+    project_id: DataTypes.INTEGER,
+    user_id: DataTypes.INTEGER,
+    manager_id: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'assignment',

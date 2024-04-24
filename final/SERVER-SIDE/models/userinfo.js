@@ -14,15 +14,15 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   userinfo.init({
-    uid: {
+    user_id: {
       primaryKey:true,
       autoIncrement:true,
       type :DataTypes.INTEGER
     },
-    uname: DataTypes.STRING,
-    upassword: DataTypes.STRING,
-    uemail: DataTypes.STRING,
-    urole: DataTypes.INTEGER,
+    name: DataTypes.STRING,
+    password: DataTypes.STRING,
+    email: DataTypes.STRING,
+    role: DataTypes.INTEGER,
     created_by: DataTypes.INTEGER,
     token: DataTypes.STRING,
     profile: DataTypes.STRING

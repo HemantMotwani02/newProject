@@ -9,25 +9,25 @@ const task = db.task
 const log = db.log
 const service = require('../services/service')
 const jwt = require('jsonwebtoken')
-const authIslogin = require('../middlewares/authIslogin')
+const authIslogin = require('../manager_iddlewares/authIslogin')
 
 
 const adduser = async (req, res) => {
     try {
-        const { uname, upassword, ucpassword, uemail, urole, created_by } = req.body
-        // check uemail already exisits or not! 
-        const emailExists = await userinfo.findOne({ where: { uemail: uemail } })
+        const { name, password , ucpassword, email, role, created_by } = req.body
+        // check email already exisits or not! 
+        const emailExists = await userinfo.findOne({ where: { email: email } })
         if (emailExists == null) {
-            if (upassword === ucpassword) {
-                const token = jwt.sign({ uemail: uemail }, 'mynameisvedantrathore', {
+            if (password  === ucpassword) {
+                const token = jwt.sign({ email: email }, 'mynameisvedantrathore', {
                     expiresIn: '48h'
                 })
                 // create user 
                 const result = await userinfo.create({
-                    uname: uname,
-                    upassword: upassword,
-                    uemail: uemail,
-                    urole: urole,
+                    name: name,
+                    password : password ,
+                    email: email,
+                    role: role,
                     created_by: created_by,
                     token: token
                 })
@@ -36,9 +36,9 @@ const adduser = async (req, res) => {
                     status: 'success',
                     msg: 'succesfully registered',
                     result: {
-                        uid: result.uid,
-                        uname: result.uname,
-                        urole: result.urole,
+                        user_id: result.user_id,
+                        name: result.name,
+                        role: result.role,
                         created_by: 'Admin',
                         token: result.token,
                         createdAt: result.createdAt,
@@ -77,19 +77,19 @@ const addProject = async (req, res) => {
     }
 }
 
-const getProjectByMid = async (req, res) => {
+const getProjectBymanager_id = async (req, res) => {
     try {
-        // assuming mid to be 3 
+        // assuming manager_id to be 3 
         const userdata = res.locals.user
-        const { uid, uname, urole } = userdata
+        const { user_id, name, role } = userdata
         let query = {
-            include: [{ model: userinfo, attributes: ['uname'] }],
+            include: [{ model: userinfo, attributes: ['name'] }],
         }
-        if (urole == 1 || urole == 2) {
+        if (role == 1 || role == 2) {
 
-            if (urole == 2) {
-                // where condition - mid = uid
-                query.where = { mid: uid }
+            if (role == 2) {
+                // where condition - manager_id = user_id
+                query.where = { manager_id: user_id }
             }
             const result = await project.findAll(query)
             res.json({
@@ -97,19 +97,19 @@ const getProjectByMid = async (req, res) => {
                 msg: 'data retrieved',
                 result: result
             })
-        } else if (urole == 3) {
+        } else if (role == 3) {
             // user hasMany assignments, ass belongs to a project
             const result = await project.findAll({
                 required: true,
                 include: [
                     {
                         model: userinfo,
-                        attributes: ['uname']
+                        attributes: ['name']
                     },
                     {
                         model: assignment,
                         where: {
-                            uid: uid
+                            user_id: user_id
                         },
                         attributes: ['createdAt', 'updatedAt']
                     }
@@ -137,16 +137,16 @@ const getProjectByMid = async (req, res) => {
 
 const assignMembers = async (req, res) => {
     try {
-        // get the mid from middle ware! 
+        // get the manager_id from manager_iddle ware! 
         const userdata = res.locals.user
 
-        if (userdata != null && (userdata.urole == 1 || userdata.urole == 2)) {
-            // const mid = userdata.uid
-            const { pid, uid } = req.body
+        if (userdata != null && (userdata.role == 1 || userdata.role == 2)) {
+            // const manager_id = userdata.user_id
+            const { project_id, user_id } = req.body
             const result = await assignment.create({
-                pid: pid,
-                uid: uid,
-                // mid: mid
+                project_id: project_id,
+                user_id: user_id,
+                // manager_id: manager_id
             })
             res.status(201).json({
                 status: 'success',
@@ -170,7 +170,7 @@ const assignMembers = async (req, res) => {
     }
 }
 
-const getProjectDetailsByMid = async (req, res) => {
+const getProjectDetailsBymanager_id = async (req, res) => {
     try {
         const projectdetails = await service.getProjectDetails()
         res.json(projectdetails)
@@ -182,14 +182,14 @@ const getProjectDetailsByMid = async (req, res) => {
 const createTask = async (req, res) => {
     try {
         const userdata = res.locals.user
-        const { uid } = userdata
+        const { user_id } = userdata
 
-        const { pid, tname, tdesc } = req.body
+        const { project_id, task_name, task_details } = req.body
         const result = await task.create({
-            pid: pid,
-            created_by: uid,
-            tname: tname,
-            tdesc: tdesc,
+            project_id: project_id,
+            created_by: user_id,
+            task_name: task_name,
+            task_details: task_details,
             status: 'pending'
         })
         console.log('task added', result)
@@ -204,7 +204,7 @@ const createTask = async (req, res) => {
 
 const getTaskByProject = async (req, res) => {
     try {
-        // assuming the manager id is 1, that is mid = 1
+        // assuming the manager id is 1, that is manager_id = 1
         const result = await project.findAll({
             include: [{
                 model: task,
@@ -214,7 +214,7 @@ const getTaskByProject = async (req, res) => {
                 }]
             }],
             where: {
-                mid: 1
+                manager_id: 1
             }
         })
         res.status(201).json({
@@ -240,19 +240,19 @@ const addLog = async (req, res) => {
     }
 }
 
-const projectDetailByPid = async (req, res) => {
+const projectDetailByproject_id = async (req, res) => {
     try {
-        // assuming I know my id, uname uid = 1 
-        const pid = req.params.pid
-        // const mid = 1
+        // assuming I know my id, name user_id = 1 
+        const project_id = req.params.project_id
+        // const manager_id = 1
 
         const result = await project.findAll({
             include: [{
                 model: userinfo,
             }],
             where: {
-                pid: pid,
-                // mid: mid
+                project_id: project_id,
+                // manager_id: manager_id
             }
 
         })
@@ -266,11 +266,11 @@ const projectDetailByPid = async (req, res) => {
     }
 }
 
-const taskByPid = async (req, res) => {
+const taskByproject_id = async (req, res) => {
     try {
         const userdata = res.locals.user
-        const { uid } = userdata
-        const pid = req.params.pid
+        const { user_id } = userdata
+        const project_id = req.params.project_id
         const val = req.query.val
 
 
@@ -285,7 +285,7 @@ const taskByPid = async (req, res) => {
 
             }],
             where: {
-                pid: pid
+                project_id: project_id
             }
         };
 
@@ -310,15 +310,15 @@ const taskByPid = async (req, res) => {
 const taskBySearchQuery = async (req, res) => {
     try {
         const userdata = res.locals.user
-        const { uid, urole } = userdata
-        const tname = req.query.query
-        const pid = req.params.pid
+        const { user_id, role } = userdata
+        const task_name = req.query.query
+        const project_id = req.params.project_id
         const result = await project.findAll({
             include: [{
                 model: task,
                 where: {
-                    tname: {
-                        [Op.like]: `%${tname}%`
+                    task_name: {
+                        [Op.like]: `%${task_name}%`
                     }
                 },
                 include: [{
@@ -326,7 +326,7 @@ const taskBySearchQuery = async (req, res) => {
                 }]
             }],
             where: {
-                pid: pid
+                project_id: project_id
             }
         })
         console.log(result)
@@ -345,10 +345,10 @@ const taskBySearchQuery = async (req, res) => {
     }
 }
 
-const memberByPid = async (req, res) => {
+const memberByproject_id = async (req, res) => {
     try {
-        // const mid = 1; // assumingthe mid is to be 1 
-        const pid = req.params.pid
+        // const manager_id = 1; // assumingthe manager_id is to be 1 
+        const project_id = req.params.project_id
         const result = await project.findAll({
             include: [{
                 model: assignment,
@@ -358,8 +358,8 @@ const memberByPid = async (req, res) => {
                 }]
             }],
             where: {
-                pid: pid,
-                // mid: mid
+                project_id: project_id,
+                // manager_id: manager_id
             }
         })
         console.log(result)
@@ -372,10 +372,10 @@ const memberByPid = async (req, res) => {
     }
 }
 
-const logByPid = async (req, res) => {
+const logByproject_id = async (req, res) => {
     try {
 
-        const pid = req.params.pid;
+        const project_id = req.params.project_id;
         const result = await project.findAll({
             include: [{
                 model: task,
@@ -391,7 +391,7 @@ const logByPid = async (req, res) => {
                 }]
             }],
             where: {
-                pid: pid,
+                project_id: project_id,
 
             },
 
@@ -406,13 +406,13 @@ const logByPid = async (req, res) => {
     }
 }
 
-const logByPidAndTid = async (req, res) => {
+const logByproject_idAndtask_id = async (req, res) => {
 
     try {
         const userdata = res.locals.user
-        const { uid, urole } = userdata
-        const pid = req.params.pid
-        const tid = req.params.tid
+        const { user_id, role } = userdata
+        const project_id = req.params.project_id
+        const task_id = req.params.task_id
         let query = {
             include: [{
                 model: task,
@@ -427,21 +427,21 @@ const logByPidAndTid = async (req, res) => {
                 ]
             }],
             where: {
-                // mid: uid,
-                pid: pid
+                // manager_id: user_id,
+                project_id: project_id
             }
         };
 
-        if (urole == 2) {
+        if (role == 2) {
             //manager
-            query.where.mid = uid
-        } else if (urole == 3) {
+            query.where.manager_id = user_id
+        } else if (role == 3) {
 
             // let query2 = {
             //     include : [{
             //         model : assignment,
             //         where : {
-            //             uid : uid
+            //             user_id : user_id
             //         },
             //         include : [
             //             {
@@ -455,10 +455,10 @@ const logByPidAndTid = async (req, res) => {
             // }
         }
 
-        // Conditionally add the where clause for task based on the value of tid
-        if (tid != 0) {
+        // Conditionally add the where clause for task based on the value of task_id
+        if (task_id != 0) {
             query.include[0].where = {
-                tid: tid
+                task_id: task_id
             };
         }
 
@@ -470,9 +470,9 @@ const logByPidAndTid = async (req, res) => {
             }
             query.include[0].include[0].where.logstatus = req.query.selectedVal;
         } else if (req.query.selectedVal == 'your') {
-            // filter the log where uid = uid
+            // filter the log where user_id = user_id
             query.include[0].include[0].where = {
-                uid: uid
+                user_id: user_id
             }
         }
 
@@ -489,26 +489,26 @@ const logByPidAndTid = async (req, res) => {
 
 const loginUserByEmailPass = async (req, res) => {
     try {
-        const { uemail, upassword } = req.body
-        const emailExists = await userinfo.findOne({ where: { uemail: uemail } })
+        const { email, password  } = req.body
+        const emailExists = await userinfo.findOne({ where: { email: email } })
 
         if (emailExists != null) {
             // check for password ! 
-            if (upassword === emailExists.upassword) {
+            if (password  === emailExists.password ) {
                 // generate token 
-                const token = jwt.sign({ uemail: uemail }, 'mynameisvedantrathore', {
+                const token = jwt.sign({ email: email }, 'mynameisvedantrathore', {
                     expiresIn: '48h'
                 })
                 // update it 
-                await userinfo.update({ token: token }, { where: { uemail: emailExists.uemail } })
+                await userinfo.update({ token: token }, { where: { email: emailExists.email } })
                 let result = emailExists
                 res.status(201).json({
                     status: 'success',
                     msg: 'succesfully registered',
                     result: {
-                        uid: result.uid,
-                        uname: result.uname,
-                        urole: result.urole,
+                        user_id: result.user_id,
+                        name: result.name,
+                        role: result.role,
                         created_by: 'Admin',
                         token: result.token,
                         createdAt: result.createdAt,
@@ -535,11 +535,11 @@ const loginUserByEmailPass = async (req, res) => {
     }
 }
 
-const getMemberByPidNotInvolved = async (req, res) => {
+const getMemberByproject_idNotInvolved = async (req, res) => {
     try {
-        const pid = req.params.pid
-        const result = await db.sequelize.query('select t.* from (select u.uid , u.uname , count(a.uid) as ct from userinfos u left join assignments a on u.uid = a.uid WHERE u.urole = 3 group by (u.uid) order by a.uid) t where t.uid not in (select uid from assignments where pid = ?)', {
-            replacements: [pid],
+        const project_id = req.params.project_id
+        const result = await db.sequelize.query('select t.* from (select u.user_id , u.name , count(a.user_id) as ct from userinfos u left join assignments a on u.user_id = a.user_id WHERE u.role = 3 group by (u.user_id) order by a.user_id) t where t.user_id not in (select user_id from assignments where project_id = ?)', {
+            replacements: [project_id],
             type: QueryTypes.SELECT,
         })
         console.log(result)
@@ -560,23 +560,23 @@ const getMemberByPidNotInvolved = async (req, res) => {
 const getProjectByStatus = async (req, res) => {
     const status = req.query.sortby;
     try {
-        // assuming mid to be 3 
+        // assuming manager_id to be 3 
         const userdata = res.locals.user
-        const { uid, uname, urole } = userdata
+        const { user_id, name, role } = userdata
         let result;
-        if (urole == 1) {
+        if (role == 1) {
             result = await project.findAll({
-                include: [{ model: userinfo, attributes: ['uname'] }],
+                include: [{ model: userinfo, attributes: ['name'] }],
                 where: {
-                    // mid: uid,
+                    // manager_id: user_id,
                     status: status
                 }
             })
-        } else if (urole == 2) {
+        } else if (role == 2) {
             result = await project.findAll({
-                include: [{ model: userinfo, attributes: ['uname'] }],
+                include: [{ model: userinfo, attributes: ['name'] }],
                 where: {
-                    mid: uid,
+                    manager_id: user_id,
                     status: status
                 }
             })
@@ -586,12 +586,12 @@ const getProjectByStatus = async (req, res) => {
                 include: [
                     {
                         model: userinfo,
-                        attributes: ['uname']
+                        attributes: ['name']
                     },
                     {
                         model: assignment,
                         where: {
-                            uid: uid
+                            user_id: user_id
                         },
                         attributes: ['createdAt', 'updatedAt']
                     }
@@ -628,22 +628,22 @@ const getProjectByOrder = async (req, res) => {
     try {
         let result;
         const userdata = res.locals.user
-        const { uid, urole } = userdata
+        const { user_id, role } = userdata
         let query = {
-            include: [{ model: userinfo, attributes: ['uname'] }],
+            include: [{ model: userinfo, attributes: ['name'] }],
             order: []
         }
-        if (urole == 1 || urole == 2) {
-            if (urole == 2) {
+        if (role == 1 || role == 2) {
+            if (role == 2) {
                 query.where = {
-                    mid: uid
+                    manager_id: user_id
                 }
             }
         } else {
             query.include[1] = {
                 model: assignment,
                 where: {
-                    uid: uid
+                    user_id: user_id
                 },
                 attributes: ['createdAt', 'updatedAt']
             }
@@ -673,28 +673,28 @@ const getProjectByOrder = async (req, res) => {
     }
 }
 
-const getProjectByPname = async (req, res) => {
+const getProjectByproject_name = async (req, res) => {
 
     try {
-        const { uid, urole } = res.locals.user
-        const pname = req.query.val
+        const { user_id, role } = res.locals.user
+        const project_name = req.query.val
 
         let query = {
-            include: [{ model: userinfo, attributes: ['uname'] }],
+            include: [{ model: userinfo, attributes: ['name'] }],
             where: {
-                // mid: uid,
-                pname: {
-                    [Op.like]: `%${pname}%`
+                // manager_id: user_id,
+                project_name: {
+                    [Op.like]: `%${project_name}%`
                 }
             }
         }
-        if (urole == 2) {
-            query.where.mid = uid
-        } else if (urole == 3) {
+        if (role == 2) {
+            query.where.manager_id = user_id
+        } else if (role == 3) {
             query.include[1] = {
                 model: assignment,
                 where: {
-                    uid: uid
+                    user_id: user_id
                 },
                 attributes: ['createdAt', 'updatedAt']
             }
@@ -717,11 +717,11 @@ const getProjectByPname = async (req, res) => {
 const updateLogStatus = async (req, res) => {
     try {
         const userdata = res.locals.user
-        const { uid } = userdata
-        const { lid, logstatus } = req.body
+        const { user_id } = userdata
+        const { log_id, logstatus } = req.body
 
-        // update logstatus = logstatus and logmid = uid where lid = lid 
-        const result = await log.update({ logstatus: logstatus, logmid: uid }, { where: { lid: lid } })
+        // update logstatus = logstatus and logmanager_id = user_id where log_id = log_id 
+        const result = await log.update({ logstatus: logstatus, logmanager_id: user_id }, { where: { log_id: log_id } })
         if (result != null) {
             res.json({
                 status: 'success',
@@ -747,10 +747,10 @@ const updateLogStatus = async (req, res) => {
 const updateTaskStatus = async (req, res) => {
     try {
         const userdata = res.locals.user
-        const { uid } = userdata;
+        const { user_id } = userdata;
         // now we do not have field in task database to record , who has updated this, whether a manager or super admin
-        const { tid, status } = req.body
-        const result = await task.update({ status: status }, { where: { tid: tid } })
+        const { task_id, status } = req.body
+        const result = await task.update({ status: status }, { where: { task_id: task_id } })
         if (result != null) {
             res.json({
                 status: 'success',
@@ -772,19 +772,19 @@ const updateTaskStatus = async (req, res) => {
     }
 }
 
-const addLogInPidAndTid = async (req, res) => {
+const addLogInproject_idAndtask_id = async (req, res) => {
     try {
         const userdata = res.locals.user
-        const { uid, urole } = userdata
-        const { pid, tid } = req.params
+        const { user_id, role } = userdata
+        const { project_id, task_id } = req.params
         const { logdata, estimatedTime } = req.body
         const result = await log.create({
-            uid: uid,
-            pid: pid,
-            tid: tid,
+            user_id: user_id,
+            project_id: project_id,
+            task_id: task_id,
             logdata: logdata,
             logstatus: 'pending',
-            logmid: 0
+            logmanager_id: 0
         })
         if (result != null) {
             res.json({
@@ -804,13 +804,13 @@ const addLogInPidAndTid = async (req, res) => {
 
 const updateProjectStatus = async (req, res) => {
     try {
-        const { pid } = req.params
+        const { project_id } = req.params
         const { status } = req.body
         const result = await project.update({
             status: status
         }, {
             where: {
-                pid: pid
+                project_id: project_id
             }
         })
         if (result != null) {
@@ -835,7 +835,7 @@ const updateProjectStatus = async (req, res) => {
 
 const getManagers = async (req, res) => {
     try {
-        const result = await userinfo.findAll({ where: { urole: 2 }, attributes: ['uid', 'uname'] })
+        const result = await userinfo.findAll({ where: { role: 2 }, attributes: ['user_id', 'name'] })
         if (result != null) {
             res.json({
                 status: 'success',
@@ -862,13 +862,13 @@ const addNewProject = async (req, res) => {
     const userdata = res.locals.user
 
     try {
-        const { uid } = userdata
-        const { pname, pdesc, mid } = req.body
+        const { user_id } = userdata
+        const { project_name, pdesc, manager_id } = req.body
         const result = await project.create({
-            pname: pname,
+            project_name: project_name,
             pdesc: pdesc,
-            mid: mid,
-            created_by: uid,
+            manager_id: manager_id,
+            created_by: user_id,
             status: 'pending'
         })
         if (result != null) {
@@ -903,7 +903,7 @@ async function UpdateDetails(req, res) {
     const { name, email, password, confirmpassword, id } = req.body;
     const profile = req.file ? req.file.path : "No File";
     console.log(profile);
-    const response = await userinfo.update({ uname: name, uemail: email, upassword: password, updatedAt: new Date(), profile: profile }, { where: { uid: id } });
+    const response = await userinfo.update({ name: name, email: email, password : password, updatedAt: new Date(), profile: profile }, { where: { user_id: id } });
 
     if (response) {
         res.status(200).json({ status: "Success", message: "Profile Updated", response })
@@ -916,26 +916,26 @@ async function UpdateDetails(req, res) {
 module.exports = {
     adduser,
     addProject,
-    getProjectByMid,
+    getProjectBymanager_id,
     assignMembers,
-    getProjectDetailsByMid,
+    getProjectDetailsBymanager_id,
     createTask,
     getTaskByProject,
     addLog,
-    projectDetailByPid,
-    taskByPid,
-    memberByPid,
-    logByPid,
-    logByPidAndTid,
+    projectDetailByproject_id,
+    taskByproject_id,
+    memberByproject_id,
+    logByproject_id,
+    logByproject_idAndtask_id,
     loginUserByEmailPass,
-    getMemberByPidNotInvolved,
+    getMemberByproject_idNotInvolved,
     getProjectByStatus,
     getProjectByOrder,
-    getProjectByPname,
+    getProjectByproject_name,
     updateLogStatus,
     updateTaskStatus,
     taskBySearchQuery,
-    addLogInPidAndTid,
+    addLogInproject_idAndtask_id,
     updateProjectStatus,
     getManagers,
     addNewProject,
